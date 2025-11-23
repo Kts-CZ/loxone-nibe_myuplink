@@ -282,9 +282,9 @@ V DSM:
 
 - Ovládací panel → Plánovač úloh → Vytvořit → Naplánovaná úloha → Skript uživatele `root`
 - V záložce **Nastavení úloh** vložte např.:
-
-    sleep 60 && cd /volume1/nibe && nohup /bin/python3 nibe.py >> /volume1/nibe/nibe.log 2>&1 &
-
+```bash
+  sleep 60 && cd /volume1/nibe && nohup /bin/python3 nibe.py >> /volume1/nibe/nibe.log 2>&1 &
+```
 Poznámky:
 
 - `sleep 60` dá systému čas po restartu (síť, DNS…)
