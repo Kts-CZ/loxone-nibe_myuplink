@@ -203,9 +203,9 @@ V adresáři `/volume1/nibe` vytvořte/otevřete soubor `config.ini` např.:
     DEVICE_ID = emmy-r-xxxxxxxxxxxxxxxxxxxxxxxxxx
 
     [loxone]
-    IP = 192.168.2.5
+    IP = 192.x.x.x
     USER = admin
-    PASS = "heslo"
+    PASS = *******
 
     [runtime]
     UPDATE_INTERVAL = 60
