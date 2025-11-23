@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <title>README – Nibe → Loxone (myUplink API v2)</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 2rem;
+      line-height: 1.5;
+      background: #0b1120;
+      color: #e5e7eb;
+    }
+    h1, h2, h3 {
+      color: #e5e7eb;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+    h2 {
+      font-size: 1.4rem;
+      margin-top: 1.5rem;
+    }
+    h3 {
+      font-size: 1.1rem;
+      margin-top: 1rem;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    pre {
+      background: #020617;
+      border-radius: 10px;
+      padding: 10px 12px;
+      overflow-x: auto;
+      border: 1px solid #1f2937;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1f2937;
+      margin: 1.5rem 0;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 800px;
+      margin-top: 0.5rem;
+    }
+    th, td {
+      border: 1px solid #1f2937;
+      padding: 6px 8px;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    th {
+      background: #020617;
+    }
+    a { color: #7dd3fc; }
+  </style>
+</head>
+<body>
+
+<h1>📘 Návod: Nibe → Loxone (myUplink API v2) na Synology / Linuxu</h1>
+
+<p>Tento projekt umožňuje číst data z <strong>Nibe tepelného čerpadla</strong> pomocí <strong>myUplink API v2</strong> a posílat je do <strong>Loxone Miniserveru</strong> přes <strong>HTTP Virtual Inputs</strong>, bez použití Modbus rozhraní.</p>
+
+<p>Součástí balíčku jsou tyto soubory:</p>
+<pre><code>nibe.py
+config.ini
+points_map.json (vygeneruje se příkazem)
+token.json (vytvoří se automaticky po prvním spuštění)
+nibe.log
+</code></pre>
+
+<hr />
+
+<h2>🧩 Co je potřeba</h2>
+<ul>
+  <li>Účet na <strong>myUplink</strong></li>
+  <li><strong>Application</strong> v developer portálu myUplink</li>
+  <li><strong>Python 3.9</strong> nainstalovaný jako balíček na Synology (důležité!)</li>
+  <li>Přístup přes SSH</li>
+  <li>Loxone Miniserver</li>
+</ul>
+
+<hr />
+
+<h2>🐍 Instalace Pythonu na Synology</h2>
+
+<p>Než cokoli spustíte, nainstalujte Python z Balíčkovacího centra:</p>
+
+<p><strong>DSM → Balíčkovací centrum → Hledat: Python → Nainstalovat Python 3.9</strong></p>
+
+<p>Ověření verze:</p>
+<pre><code>which python3
+python3 --version
+</code></pre>
+
+<p>Správně má být výsledek např.:</p>
+<pre><code>/bin/python3
+Python 3.9.13
+</code></pre>
+
+<p>Pokud je tam jen <code>/bin/python3</code>, jde o vestavěný Python bez pip — skript nebude fungovat.</p>
+
+<hr />
+
+<hr />
+
+<h2>🔑 Připojení na Synology přes SSH</h2>
+
+<p>Než budete pokračovat v instalaci a konfiguraci, je potřeba přihlásit se na NAS přes SSH.</p>
+
+<h3>Aktivace SSH v DSM</h3>
+<ol>
+  <li>Otevřete <strong>Ovládací panel</strong></li>
+  <li>Přejděte na <strong>Terminál &amp; SNMP</strong></li>
+  <li>Zaškrtněte volbu <strong>Povolit službu SSH</strong></li>
+  <li>Port ponechte <strong>22</strong></li>
+  <li>Klikněte <strong>Použít</strong></li>
+</ol>
+
+<h3>Připojení z Windows (PuTTY)</h3>
+<ul>
+  <li>Stáhněte PuTTY: <a href="https://www.putty.org" target="_blank">https://www.putty.org</a></li>
+  <li>Host Name: <code>IP_vašeho_NAS</code></li>
+  <li>Port: <code>22</code></li>
+  <li>Connection type: <strong>SSH</strong></li>
+  <li>Přihlásit se uživatelem s oprávněním <code>sudo</code> nebo <code>admin</code></li>
+</ul>
+
+<h3>Připojení z macOS / Linux</h3>
+<pre><code>ssh admin@192.168.x.x
+</code></pre>
+
+<h3>Přepnutí do root režimu</h3>
+<pre><code>sudo -i
+</code></pre>
+
+<p>Ověření:</p>
+<pre><code>whoami
+</code></pre>
+
+<p>Správný výstup:</p>
+<pre><code>root
+</code></pre>
+
+<p><strong>Poznámka:</strong> Pokud sudo nefunguje, je potřeba jej povolit v DSM:
+<code>Ovládací panel → Uživatelé → Upravit → Práva aplikací → Povolit sudo</code></p>
+
+<p>Pro vyšší bezpečnost je možné po dokončení konfigurace SSH opět vypnout:
+<code>Ovládací panel → Terminál &amp; SNMP → vypnout SSH</code></p>
+
+<hr />
+
+
+<h2>📦 Instalace pip a knihovny Requests</h2>
+
+<pre><code>sudo -i
+/bin/python3 -m ensurepip
+/bin/python3 -m pip install requests
+</code></pre>
+
+<p>Ověření instalace:</p>
+<pre><code>/bin/python3 -c "import requests; print(hasattr(requests,'post'))"
+</code></pre>
+
+<p>Výstup musí být:</p>
+<pre><code>True
+</code></pre>
+
+<hr />
+
+<hr />
+
+<h2>📁 Umístění souborů na NAS / Linux</h2>
+
+<p>Celou složku se skripty nahrajte na Synology do adresáře, ze kterého bude skript trvale běžet. Doporučené umístění je:</p>
+
+<pre><code>/volume1/nibe
+</code></pre>
+
+<p>Struktura složek by měla vypadat takto:</p>
+
+<pre><code>/volume1/nibe/
+ ├── nibe.py
+ ├── config.ini
+ ├── points_map.json
+ ├── token.json        (vytvoří se automaticky po prvním spuštění)
+ └── nibe.log          (pokud je povolen, vytvoří ho skript)
+</code></pre>
+
+<p>Pokud chcete použít jiné umístění, je nutné upravit cestu k logu a případně v plánovači úloh upravit příkaz pro spuštění skriptu.</p>
+
+<p><strong>Příklad příkazu v Plánovači úloh:</strong></p>
+<pre><code>sleep 60 && nohup /bin/python3 /volume1/nibe/nibe.py > /volume1/nibe/nibe.log 2>&1 &
+</code></pre>
+
+<p>Tento skript spustí aplikaci na pozadí a ukládá log do:</p>
+<pre><code>/volume1/nibe/nibe.log
+</code></pre>
+
+<p><strong>Poznámka:</strong> Soubor <code>token.json</code> není nutné vytvářet ručně, vytvoří se automaticky při prvním úspěšném získání tokenu.</p>
+
+<hr />
+
+
+<h2>⚙ Konfigurace <code>config.ini</code> (DŮLEŽITÉ)</h2>
+
+<p>📌 <strong>V <code>config.ini</code> NEPOUŽÍVAT uvozovky</strong> u <code>CLIENT_ID</code>, <code>CLIENT_SECRET</code>, <code>REFRESH_TOKEN</code>, <code>DEVICE_ID</code>.<br>
+Pokud tam uvozovky jsou, myUplink vrátí chybu <strong>invalid_client</strong>.</p>
+
+<p>Správná podoba:</p>
+<pre><code>[myuplink]
+CLIENT_ID = 2499b39f-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+CLIENT_SECRET = 1234567890ABCDEF1234567890ABCDEF
+REFRESH_TOKEN = ABCDEFGHIJKLMNOPQRSTUVWXYZ123456
+DEVICE_ID = emmy-r-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+[loxone]
+IP = 192.168.4.10
+USER = admin
+PASS = heslo
+
+[runtime]
+UPDATE_INTERVAL = 60
+LOG_ENABLED = true
+LOG_FILE = /volume1/homes/nibe/nibe.log
+</code></pre>
+
+<hr />
+
+<h2>🔐 Získání OAuth kódu a refresh tokenu</h2>
+
+<p>Nejdříve je potřeba vygenerovat autorizační kód a následně z něj získat <code>refresh_token</code>, který skript používá pro další komunikaci s API.</p>
+
+<h3>1️⃣ Nastavení aplikace v myUplink Developer portálu</h3>
+
+<p>Otevřete: <a href="https://dev.myuplink.com" target="_blank">https://dev.myuplink.com</a></p>
+
+<ul>
+  <li><strong>Application Name:</strong> libovolný např. <code>loxone</code></li>
+  <li><strong>Description:</strong> libovolné</li>
+  <li><strong>Callback URL:</strong> <code>http://localhost/</code></li>
+</ul>
+
+<p><strong>Poznámka:</strong> <code>Callback URL</code> musí <strong>naprosto přesně</strong> odpovídat hodnotě použití v parametru <code>redirect_uri</code>.</p>
+
+<h3>2️⃣ Otevření autorizační URL </h3>
+
+<p>Přepište CLIENT_ID a do prohlížeče vložte následující URL (včetně URL encode znaků). Dejte pozor na správný tvar redirect_uri - Callback URL:</p>
+
+<pre><code>https://api.myuplink.com/oauth/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=http%3A%2F%2Flocalhost%2F&scope=READSYSTEM%20offline_access&state=xyz
+</code></pre>
+
+<p>Po přihlášení a odsouhlasení práv budete přesměrováni na:</p>
+
+<pre><code>http://localhost/?code=XXXXXXXXXXXX&scope=READSYSTEM%20offline_access&state=xyz
+</code></pre>
+
+<p>Hodnotu <code>code=...</code> si zkopírujte.</p>
+
+<h3>3️⃣ Získání refresh tokenu přes curl. Přepište ZISKANY_CODE, CLIENT_ID a CLIENT_SECRET. Pozor na správné redurect_uri</h3>
+
+<pre><code>curl -X POST "https://api.myuplink.com/oauth/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=authorization_code&code=ZISKANY_CODE&client_id=CLIENT_ID&client_secret=CLIENT_SECRET&redirect_uri=http%3A%2F%2Flocalhost%2F"
+</code></pre>
+
+<p>Správná odpověď obsahuje například:</p>
+
+<pre><code>{
+  "access_token": ".....",
+  "expires_in": 3600,
+  "token_type": "Bearer",
+  "refresh_token": "ZDE_REFRESH_TOKEN",
+  "scope": "READSYSTEM offline_access"
+}
+</code></pre>
+
+<h3>4️⃣ Uložení refresh tokenu do <code>config.ini</code></h3>
+
+<pre><code>[myuplink]
+CLIENT_ID = "...."
+CLIENT_SECRET = "...."
+REFRESH_TOKEN = "ZDE_REFRESH_TOKEN"
+</code></pre>
+
+<p>Tím je proces autentizace hotový a skript bude poté tokeny automaticky obnovovat.</p>
+
+<hr />
+
+<h2>▶ První test</h2>
+<p>Jednorázový test bez zápisu do Loxone:</p>
+<pre><code>/bin/python3 /volume1/nibe/nibe.py --once --dry-run
+</code></pre>
+
+<p>Očekávaný výstup:</p>
+<pre><code>Access token refreshed
+[dry-run] Would send Nibe_OutdoorTemp = -2.5
+[dry-run] Would send Nibe_OutdoorTempAvg = -2.2
+...
+</code></pre>
+
+<hr />
+
+<h2>🛰 Odesílání dat do Loxone</h2>
+
+<p>Názvy Virtual Inputs musí odpovídat hodnotám v <code>points_map.json</code>, např.:</p>
+<pre><code>Nibe_OutdoorTemp
+Nibe_Flow
+Nibe_CompressorHours
+</code></pre>
+
+<p><strong>Seznam parametrů z Nibe:</strong></p>
+<pre><code>/bin/python3 nibe.py --print-params
+</code></pre>
+
+<p><strong>Generování XML šablony VI pro import do Loxone. Můžete si virtuální proměnné pojmenovat podle sebe v souboru points_map:</strong></p>
+<pre><code>/bin/python3 nibe.py --generate-xml
+</code></pre>
+
+<hr />
+
+<h2>🔁 Automatický start na Synology</h2>
+
+<p>V DSM:</p>
+<ul>
+  <li><strong>Ovládací panel → Plánovač úloh → Přidat → Skript uživatele root</strong></li>
+</ul>
+
+<p>Skript např.:</p>
+<pre><code>sleep 60 && nohup /bin/python3 /volume1/nibe/nibe.py > /volume1/nibe/nibe.log 2>&1 &
+</code></pre>
+
+<hr />
+
+<h2>🩺 Troubleshooting</h2>
+
+<table>
+  <tr>
+    <th>Chyba</th>
+    <th>Řešení</th>
+  </tr>
+  <tr>
+    <td><code>invalid_client</code></td>
+    <td>Odstranit uvozovky v <code>config.ini</code>, zkontrolovat CLIENT_ID / SECRET podle dev.myuplink.com</td>
+  </tr>
+  <tr>
+    <td><code>invalid_grant</code></td>
+    <td>Refresh token expiroval — znovu získat <code>code</code> a <code>refresh_token</code> podle postupu výše</td>
+  </tr>
+  <tr>
+    <td><code>module 'requests' has no attribute 'post'</code></td>
+    <td>Nainstalovat <code>requests</code> přes pip pro správný Python (viz instalace výše)</td>
+  </tr>
+  <tr>
+    <td>Hodnoty se neobjevují v Loxone</td>
+    <td>Zkontrolovat, zda názvy Virtual Inputs odpovídají <code>points_map.json</code> a že skript neběží jen v <code>--dry-run</code> režimu</td>
+  </tr>
+</table>
+
+<hr />
+
+<p><strong>👍 Hotovo.</strong><br>
+Pokud máte připravené VI v Loxone a správně nastavený <code>config.ini</code>, hodnoty se začnou pravidelně aktualizovat podle <code>UPDATE_INTERVAL</code>.</p>
+
+</body>
+</html>
