@@ -40,10 +40,10 @@ Doporučená struktura na Synology:
 
 ## 🐍 Instalace Pythonu na Synology
 
-Než cokoli spustíte, nainstalujte **Python** z *Balíčkovacího centra*.
+Než cokoli spustíte, nainstalujte **Python** z *Centra balíčků*.
 
 **Postup:**
-DSM → Balíčkovací centrum → Hledat: Python → Nainstalovat Python 3.9
+DSM → Centrum balíčků → Hledat: Python → Nainstalovat Python 3.9
 
 ### Ověření instalace
 ```bash
