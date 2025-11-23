@@ -196,21 +196,27 @@ nejčastější příčiny jsou:
 
 V adresáři `/volume1/nibe` vytvořte/otevřete soubor `config.ini` např.:
 
-    [myuplink]
-    CLIENT_ID = CLIENT_ID_Z_PORTALU
-    CLIENT_SECRET = CLIENT_SECRET_Z_PORTALU
-    REFRESH_TOKEN = REFRESH_TOKEN_Z_CURL
-    DEVICE_ID = emmy-r-xxxxxxxxxxxxxxxxxxxxxxxxxx
+[myuplink]
+CLIENT_ID = 00000000-0000-0000-0000-000000000000
+CLIENT_SECRET = your_client_secret_here
+# Fallback refresh token jen pro 1. spuštění (pak se přepíše do token.json):
+REFRESH_TOKEN = paste_initial_refresh_token_here
+DEVICE_ID = emmy-r-xxxxxxxx-xxxxxxxxxxxxxxxxxx
 
-    [loxone]
-    IP = 192.x.x.x
-    USER = admin
-    PASS = *******
+# údaje o loxone
+[loxone]
+IP = ip-adresa-miniserveru-zde
+USER = admin
+PASS = ********
 
-    [runtime]
-    UPDATE_INTERVAL = 60
-    LOG_ENABLED = true
-    LOG_FILE = /volume1/nibe/nibe.log
+[runtime]
+# obnova dat default 60 sekund
+UPDATE_INTERVAL = 60
+# logování - zapnuto=true, vypnuto=false
+LOG_ENABLED = true
+# můj log file například /volume1/nibe/nibe.log
+LOG_FILE = cesta_k_logu
+
 
 Poznámky:
 
