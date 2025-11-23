@@ -237,7 +237,7 @@ Pokud odstraníte `--dry-run`, budou hodnoty odesílány do Loxone.
 
 ---
 
-## 🔌 Loxone – vytvoření proměnných (Virtual Inputs) - Není nutné měnit, ale v pravé části si můžete upravit názvy proměnných nebo řidat další, pokud se nové objeví
+## 🔌 Loxone – vytvoření proměnných (Virtual Inputs) - Není nutné měnit, ale v pravé části si můžete upravit názvy proměnných nebo přidat další, pokud se nové objeví
 
 Skript používá mapování v `points_map.json`, např.:
 
