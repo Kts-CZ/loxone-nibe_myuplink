@@ -6,7 +6,7 @@ Integrace tepelného čerpadla **Nibe** přes **myUplink API** do systému **Lox
 ## 📌 Co projekt dělá
 Python skript:
 
-- načítá data z Nibe přes myUplink API (v2),
+- načítá data z Nibe přes myUplink API,
 - mapuje hodnoty podle `points_map.json`,
 - odesílá je do Loxone jako Virtual Inputs,
 - běží typicky na Synology v adresáři `/volume1/nibe`,
@@ -40,13 +40,29 @@ Doporučená struktura na Synology:
 
 ## 🐍 Instalace Pythonu na Synology
 
-V DSM:
+Než cokoli spustíte, nainstalujte **Python** z *Balíčkovacího centra*.
 
-- Centrum balíčků → Vše → Python → Instalovat
+**Postup:**
+DSM → Balíčkovací centrum → Hledat: Python → Nainstalovat Python 3.9
 
-Ověření verze v SSH:
+### Ověření instalace
+```bash
+which python3
+python3 --version
+```
 
-    python3 --version
+### Správný výstup
+```bash
+/bin/python3
+Python 3.9.13
+```
+
+> Pokud se zobrazí pouze:
+> ```bash
+> /bin/python3
+> ```
+> jde o vestavěný systémový Python **bez podpory pip**, a skript nebude fungovat.
+
 
 ---
 
