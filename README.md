@@ -66,15 +66,48 @@ Python 3.9.13
 
 ---
 
-## 🖥 Připojení k Synology přes SSH
+## 🔑 Připojení na Synology přes SSH
 
-V DSM:
+Než budete pokračovat v instalaci a konfiguraci, je potřeba přihlásit se na NAS přes SSH.
 
-- Ovládací panel → Terminál & SNMP → Povolit SSH
+### Aktivace SSH v DSM
+1. Otevřete **Ovládací panel**
+2. Přejděte na **Terminál & SNMP**
+3. Zaškrtněte volbu **Povolit službu SSH**
+4. **Port ponechte 22**
+5. Klikněte **Použít**
 
-Připojení z PC (Windows / Linux / macOS):
+### Připojení z Windows (PuTTY)
+- Stáhněte PuTTY: https://www.putty.org
+- **Host Name:** IP_vašeho_NAS
+- **Port:** 22
+- **Connection type:** SSH
+- Přihlaste se uživatelem s oprávněním **sudo** nebo **admin**
 
-    ssh UZIVATEL@IP_NAS
+### Připojení z macOS / Linux
+```bash
+ssh admin@192.168.x.x
+```
+
+### Přepnutí do root režimu
+```bash
+sudo -i
+```
+
+### Ověření
+```bash
+whoami
+```
+
+### Správný výstup
+```bash
+root
+```
+
+
+> **Doporučení:** Pro vyšší bezpečnost je možné po dokončení konfigurace SSH opět vypnout:  
+> **Ovládací panel → Terminál & SNMP → vypnout SSH**
+
 
 ---
 
