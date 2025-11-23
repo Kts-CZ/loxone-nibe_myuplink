@@ -194,8 +194,9 @@ nejčastější příčiny jsou:
 
 ## ⚙ Konfigurace `config.ini`
 
-V adresáři `/volume1/nibe` vytvořte/otevřete soubor `config.ini` např.:
+V adresáři `/volume1/nibe` vytvořte nebo otevřete soubor `config.ini`, například takto:
 
+```ini
 [myuplink]
 CLIENT_ID = 00000000-0000-0000-0000-000000000000
 CLIENT_SECRET = your_client_secret_here
@@ -216,6 +217,8 @@ UPDATE_INTERVAL = 60
 LOG_ENABLED = true
 # můj log file například /volume1/nibe/nibe.log
 LOG_FILE = cesta_k_logu
+```
+
 
 
 Poznámky:
