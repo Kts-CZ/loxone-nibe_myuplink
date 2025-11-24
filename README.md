@@ -154,11 +154,11 @@ Na NASu (v SSH) spusťte:
 
     curl -X POST "https://api.myuplink.com/oauth/token" \
       -H "Content-Type: application/x-www-form-urlencoded" \
-      -d "grant_type=authorization_code&code=SEM_CODE&client_id=CLIENT_ID&client_secret=CLIENT_SECRET&redirect_uri=http%3A%2F%2Flocalhost%2F"
+      -d "grant_type=authorization_code&code=CODE&client_id=CLIENT_ID&client_secret=CLIENT_SECRET&redirect_uri=http%3A%2F%2Flocalhost%2F"
 
 Nahradíte:
 
-- `SEM_CODE` – hodnotou z `code=...`
+- `CODE` – hodnotou z `code=...`
 - `CLIENT_ID` – ID aplikace
 - `CLIENT_SECRET` – secret z developer portálu
 
@@ -191,6 +191,85 @@ nejčastější příčiny jsou:
 3. Získejte **nový** `code` (znovu krok 2) a ihned ho použijte v curlu
 
 ---
+
+
+
+
+
+
+
+## 🔍 Získání `access_token` a `deviceId` pro myUplink API
+
+Pro správnou funkci skriptu je potřeba znát `deviceId` tepelného čerpadla.  
+Nejprve si z `refresh_token` vygenerujeme krátkodobý `access_token` a pak z API vyčteme `deviceId`.
+
+---
+
+### 1️⃣ Získání `access_token` z myUplink API
+
+
+Na Synology (nebo kdekoliv, kde máte `curl`) spusťte:
+
+```bash
+curl -X POST "https://api.myuplink.com/oauth/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=authorization_code" \
+  -d "code=CODE" \
+  -d "redirect_uri=http://localhost/" \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET"
+```
+
+Výsledek bude JSON, např.:
+
+```json
+{
+  "access_token": " TVŮJ_ACCESS_TOKEN",
+  "expires_in": 3600,
+  "token_type": "Bearer",
+  "refresh_token": "REFRESH_TOKEN_ZDE",
+  "scope": "READSYSTEM"
+}
+```
+---
+
+### 2️⃣ Použití `TVŮJ_ACCESS_TOKEN` pro zjištění `deviceId`
+
+```bash
+curl -H "Authorization: Bearer TVŮJ_ACCESS_TOKEN" https://api.myuplink.com/v2/systems/me
+```
+
+---
+
+### 3️⃣ Ve výsledku najděte `deviceId`
+Ukázka anonymizovaného JSON výstupu:
+
+```json
+{
+  "systems": [{
+    "name": "Nibe",
+    "devices": [{
+      "id": "emmy-r-xxxxxxxx-xxxxxxxxxxxxxxxxxx",
+      "connectionState": "Connected"
+    }]
+  }]
+}
+```
+
+➡️ Hodnotu v `id` vložte do `config.ini`:
+
+```ini
+DEVICE_ID = emmy-r-xxxxxxxx-xxxxxxxxxxxxxxxxxx
+```
+
+---
+
+
+💡 **Poznámka:**  
+- `TVŮJ_ACCESS_TOKEN` = krátkodobý token používaný pro volání API (platí minuty až hodinu)  
+- `refresh_token` je dlouhodobější a skript z něj token obnovuje automaticky
+
+
 
 ## ⚙ Konfigurace `config.ini`
 
