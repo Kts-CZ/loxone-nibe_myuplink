@@ -302,7 +302,6 @@ LOG_FILE = cesta_k_logu
 
 Poznámky:
 
-- `DEVICE_ID` najdete v API nebo v aplikaci myUplink (ID vašeho zařízení).
 - `LOG_FILE` můžete změnit na jinou cestu, pokud nechcete logovat do `/volume1/nibe`.
 
 ---
